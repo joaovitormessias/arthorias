@@ -57,9 +57,17 @@ def controlar_servo_com_angulo(pontos):
     :param pontos: Lista de coordenadas dos pontos da mão
     """
     
-    angulo_polegar = calcular_angulo(np.array(pontos[0]),np.array(pontos[1]),np.array(pontos[4]))
+    angulo_polegar = calcular_angulo(np.array(pontos[4]),np.array(pontos[0]),np.array(pontos[7]))
+    angulo_indicador = calcular_angulo(np.array(pontos[5]), np.array(pontos[6]), np.array(pontos[7]))
+    angulo_medio = calcular_angulo(np.array(pontos[9]), np.array(pontos[10]), np.array(pontos[11]))
+    angulo_anelar = calcular_angulo(np.array(pontos[13]), np.array(pontos[14]), np.array(pontos[15]))
+    angulo_minimo = calcular_angulo(np.array(pontos[17]), np.array(pontos[18]), np.array(pontos[19]))
 
     mao.abrir_fechar(7,angulo_polegar)
+    mao.abrir_fechar(6, angulo_indicador)
+    mao.abrir_fechar(5, angulo_medio)
+    mao.abrir_fechar(4, angulo_anelar)
+    mao.abrir_fechar(3,angulo_minimo)
 
 # Loop principal de captura de vídeo e processamento
 while True:
