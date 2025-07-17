@@ -2,7 +2,7 @@ from pyfirmata import Arduino, SERVO
 import time
 
 # configuracao da placa Arduino
-board = Arduino('COM10')
+board = Arduino('COM5')
 
 # definicao dos pinos para controle dos servos
 servo_pins = {

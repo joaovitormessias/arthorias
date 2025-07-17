@@ -10,7 +10,9 @@ servo_pins = {
     'indicador': 6,
     'medio': 5,
     'anelar': 4,
-    'minimo': 3
+    'minimo': 3,
+    'ombro': 12,
+    'cotovelo': 13,
 }
 
 # configuracao dos pinos no modo SERVO
