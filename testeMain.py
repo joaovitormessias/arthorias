@@ -28,7 +28,8 @@ def process_hand_points(img, hand_points):
         
         # Coleta e armazena as coordenadas x e y dos pontos
         for id, cord in enumerate(points.landmark):
-            cx, cy, cz = int(cord.x * w), int(cord.y * h)
+            # Captura as coordenadas x e y normalizadas dos pontos da mão
+            cx, cy = int(cord.x * w), int(cord.y * h)
             cv2.circle(img, (cx, cy), 4, (255, 0, 0), -1)  # Desenha um círculo no ponto
             pontos.append((cx, cy))
     
