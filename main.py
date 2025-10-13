@@ -1,7 +1,6 @@
 import cv2
 import mediapipe as mp
 import servo as mao  # Arquivo 'servo' importado
-
 # Configuração inicial da captura de vídeo
 cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)  # Define a largura do frame
