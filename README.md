@@ -141,7 +141,7 @@ Este projeto é parte de um Trabalho de Conclusão de Curso, portanto:
 
 ---
 
-##👤 Autor
+## 👤 Autor
 
 *João Vitor Messias da Cruz Damasio*
 Tecnologia em Análise e Desenvolvimento de Sistemas
