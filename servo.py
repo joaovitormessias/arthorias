@@ -1,8 +1,10 @@
 from pyfirmata import Arduino, SERVO
 import time
+import os
 
 # configuracao da placa Arduino
-board = Arduino('COM5')
+# Select the serial device without editing source for each workstation.
+board = Arduino(os.getenv('ARDUINO_PORT', 'COM5'))
 
 # definicao dos pinos para controle dos servos
 servo_pins = {

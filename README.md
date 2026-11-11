@@ -1,148 +1,56 @@
-# Projeto Arthorias – Controle de Braço Robótico por Visão Computacional
+# Arthorias — Gesture-Controlled Robotic Hand
 
-Este repositório contém o código-fonte do Trabalho de Conclusão de Curso (TCC) de **João Vitor Messias da Cruz Damasio**, desenvolvido no Instituto Federal Catarinense – Campus Fraiburgo.  
-O projeto explora a integração entre **visão computacional**, **aprendizado de máquina leve**, e **robótica**, implementando um **braço robótico controlado por gestos**, alinhado aos conceitos fundamentais da **Indústria 4.0**.
+**Translate camera-detected hand landmarks into servo commands.**
 
----
+A final-year academic project by João Vitor Messias da Cruz Damasio at Instituto Federal Catarinense, Campus Fraiburgo. The main entry point tracks one hand with MediaPipe and OpenCV, classifies finger positions using landmark distances, and drives five servos through Firmata.
 
-## 🧠 Objetivo
+**Python · OpenCV · MediaPipe Hands · PyFirmata · Arduino**
 
-Desenvolver um sistema capaz de interpretar **gestos manuais capturados pela câmera** utilizando **MediaPipe + OpenCV**, convertendo essas informações em **comandos de movimento** para um **braço robótico baseado em servomotores**, controlado via **Arduino / RP2040**.
+## Main workflow
 
----
+Camera frame → RGB conversion → 21 hand landmarks → finger-distance rules → servo angles.
 
-## ⚙️ Tecnologias Utilizadas
+The main script implements discrete open/close commands. Additional experimental scripts exist, but advanced arm rotation, smoothing, and universal RP2040 compatibility are not established by this entry point.
 
-### **Visão Computacional**
-- **MediaPipe Hands** – rastreamento de 21 pontos da mão
-- **MediaPipe Pose** – rastreamento de ombro, cotovelo e punho
-- **OpenCV** – captura de vídeo e processamento de imagem
-- **NumPy** – cálculo de vetores, distâncias e interpolações
+## Hardware mapping
 
-### **Robótica / Hardware**
-- **Arduino / RP2040**
-- **PyFirmata / ConfigurableFirmata**
-- **Servomotores padrão (0–180°)**
+| Finger | Digital pin | Open angle | Closed angle in abrir_fechar |
+| --- | --- | --- | --- |
+| Thumb | 7 | 0° | 100° |
+| Index | 6 | 0° | 120° |
+| Middle | 5 | 0° | 120° |
+| Ring | 4 | 0° | 120° |
+| Little | 3 | 0° | 120° |
 
-### **Linguagem**
-- **Python 3.11+**
+These values describe the code, not calibrated limits for another mechanism. Review power, wiring, common ground, and safe mechanical travel before connecting servos. No hardware movement was performed during this review.
 
----
+## Setup
 
-## 📦 Estrutura do Projeto
+Use a camera, a compatible Arduino running servo-capable Firmata firmware, and Python/dependencies compatible with the legacy MediaPipe Solutions and PyFirmata APIs.
 
-```
-arthorias/
-│── main.py # Loop principal e captura de câmera
-│── servo.py # Controle dos servos com Firmata
-│── opencv.py # Funções visuais auxiliares
-│── requirements.txt # Dependências
-│── README.md # Este arquivo
-```
-
-
----
-
-## 🛠️ Instalação
-
-### 1. Clone este repositório:
 ```bash
-git clone https://github.com/joaovitormessias/arthorias
+git clone https://github.com/joaovitormessias/arthorias.git
 cd arthorias
-```
-
-### 2. Crie e ative um ambiente virtual (opcional, recomendado):
-```
-python -m venv venv
-source venv/bin/activate  # Linux
-venv\Scripts\activate     # Windows
-```
-
-### 3. Instale as dependências:
-
-```
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-```
-### 4. Instale e carregue o ConfigurableFirmata no Arduino/RP2040:
-
-```
-No Arduino IDE → Arquivo > Exemplos > Firmata > ConfigurableFirmata
-Carregue o código e conecte via USB.
-```
----
-
-## Execução
-
-Com o microcontrolador conectado, execute:
-
-```
-python3 main.py
+export ARDUINO_PORT=/dev/ttyACM0
+python main.py
 ```
 
-A janela será aberta exibindo:
+Set `ARDUINO_PORT` to your actual device (for example `COM5` on Windows). Camera index is currently 0. Press Q to exit. Dependencies are unpinned; hardware/API compatibility has not been validated in this review environment.
 
-- A detecção da mão e do braço
+## Code walkthrough
 
-- As conexões gráficas (landmarks)
+- [main.py](main.py): acquisition, landmarks, finger rules, and OpenCV display. Selects DirectShow only on Windows.
+- [servo.py](servo.py): serial board setup and finger-to-pin mapping; board connection happens on import.
+- [mediapipe_demo.py](mediapipe_demo.py): renamed experiment, previously `mediapipe.py`. The previous name shadowed the installed MediaPipe package.
+- [braco.py](braco.py): separate arm experiment; do not assume identical behavior to main.py.
 
-- Os comandos em graus enviados aos servos
+## Verification and limits
 
-Pressione *Q* para sair.
+Python compilation and the mocked servo test pass without hardware. Run `python -m unittest discover -s tests` from the repository root. They do not validate camera detection, serial timing, power requirements, or mechanical safety. Existing `teste*.py` files are hardware experiments, not a dependable isolated test suite.
 
----
+The main algorithm uses image-space thresholds and can be sensitive to distance, lighting, occlusion, and hand orientation. It sends repeated commands and does not implement a calibrated fail-safe on tracking loss. Next steps: measured gesture accuracy, a camera-only mode, dependency pinning, and a recorded hardware demonstration.
 
-## Como funciona o mapeamento dos gestos?
-
-- Abertura/fechamento dos dedos → baseia-se na distância entre landmarks (ex.: 4–2, 8–6)
-
-- Rotação do antebraço → calculada pela normal da palma via produto vetorial
-
-- Aproximação do braço → deriva do movimento do eixo Z do punho
-
-- Ângulos são filtrados por média exponencial e limitados entre 0° e 180°, garantindo estabilidade
-
----
-
-## 📊 Aplicações do Projeto
-
-- Interfaces naturais (HCI)
-
-- Robótica educacional
-
-- Automação industrial leve
-
-- Estudos de prototipação em I4.0
-
-- Bases para sistemas de teleoperação
-
----
-
-## 📄 Licença
-
-Este projeto é parte de um Trabalho de Conclusão de Curso, portanto:
-
-- Pode ser utilizado para fins educacionais
-
-- Pode ser modificado e estudado livremente
-
-- Não é permitido uso comercial sem autorização
-
----
-
-## 📚 Principais referências
-
-- MediaPipe Documentation
-
-- OpenCV Python Docs
-
-- PyFirmata
-
-- Arduino
-
----
-
-## 👤 Autor
-
-*João Vitor Messias da Cruz Damasio*
-Tecnologia em Análise e Desenvolvimento de Sistemas
-Instituto Federal Catarinense – Campus Fraiburgo  ​
+[License](LICENSE) · [Maintainer](https://github.com/joaovitormessias)
