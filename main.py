@@ -1,8 +1,10 @@
+import sys
 import cv2
 import mediapipe as mp
 import servo as mao  # Arquivo 'servo' importado
 # Configuração inicial da captura de vídeo
-cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+# DirectShow is Windows-specific; other platforms use OpenCV auto-detection.
+cap = cv2.VideoCapture(0, cv2.CAP_DSHOW if sys.platform == "win32" else cv2.CAP_ANY)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)  # Define a largura do frame
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)  # Define a altura do frame
 
@@ -20,17 +22,17 @@ def process_hand_points(img, hand_points):
     """
     h, w, _ = img.shape
     pontos = []
-    
+
     # Percorre os pontos da mão detectada
     for points in hand_points:
         mp_draw.draw_landmarks(img, points, mp_hands.HAND_CONNECTIONS)
-        
+
         # Coleta e armazena as coordenadas x e y dos pontos
         for id, cord in enumerate(points.landmark):
             cx, cy = int(cord.x * w), int(cord.y * h)
             cv2.circle(img, (cx, cy), 4, (255, 0, 0), -1)  # Desenha um círculo no ponto
             pontos.append((cx, cy))
-    
+
     return pontos
 
 def controlar_servo(pontos):
@@ -44,7 +46,7 @@ def controlar_servo(pontos):
     dist_medio = pontos[9][1] - pontos[12][1]
     dist_anelar = pontos[13][1] - pontos[16][1]
     dist_minimo = pontos[17][1] - pontos[20][1]
-    
+
     # Controla o servo com base nas distâncias dos dedos
     mao.abrir_fechar(7, 0 if dist_polegar < 80 else 1)
     mao.abrir_fechar(6, 1 if dist_indicador >= 1 else 0)
@@ -53,32 +55,36 @@ def controlar_servo(pontos):
     mao.abrir_fechar(3, 1 if dist_minimo >= 1 else 0)
 
 # Loop principal de captura de vídeo e processamento
-while True:
-    success, img = cap.read()  # Lê o frame da câmera
-    if not success:
-        print("Falha ao capturar imagem.")
-        break
-    
-    # Converte a imagem de BGR para RGB
-    frame_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    
-    # Processa o frame para detectar mãos
-    results = hands.process(frame_rgb)
-    hand_points = results.multi_hand_landmarks
-    
-    # Se detectar uma mão, processa os pontos e controla o servo
-    if hand_points:
-        pontos = process_hand_points(img, hand_points)
-        if pontos:
-            controlar_servo(pontos)
-    
-    # Exibe a imagem com os pontos da mão desenhados
-    cv2.imshow('Imagem', img)
-    
-    # Verifica se a tecla 'q' foi pressionada para encerrar
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+try:
+    while True:
+        success, img = cap.read()  # Lê o frame da câmera
+        if not success:
+            print("Falha ao capturar imagem.")
+            break
 
-# Libera os recursos ao encerrar
-cap.release()
-cv2.destroyAllWindows()
+        # Converte a imagem de BGR para RGB
+        frame_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        # Processa o frame para detectar mãos
+        results = hands.process(frame_rgb)
+        hand_points = results.multi_hand_landmarks
+
+        # Se detectar uma mão, processa os pontos e controla o servo
+        if hand_points:
+            pontos = process_hand_points(img, hand_points)
+            if pontos:
+                controlar_servo(pontos)
+
+        # Exibe a imagem com os pontos da mão desenhados
+        cv2.imshow('Imagem', img)
+
+        # Verifica se a tecla 'q' foi pressionada para encerrar
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+finally:
+    # Always release resources, including on processing errors or interruption.
+    hands.close()
+    mao.board.exit()
+    cap.release()
+    cv2.destroyAllWindows()
